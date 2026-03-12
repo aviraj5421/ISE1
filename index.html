@@ -1,85 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Website</title>
+<title>Student Quiz</title>
+
+<style>
+body{
+font-family: Arial;
+background:#eef2f7;
+margin:0;
+}
+
+.container{
+width:90%;
+max-width:450px;
+margin:60px auto;
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 0 10px #ccc;
+}
+
+h2{text-align:center;}
+
+input, select{width:100%; padding:8px; margin-top:5px;}
+button{width:100%; padding:10px; margin-top:10px; background:#4a7cff; color:white; border:none; cursor:pointer;}
+button:hover{background:#365fd1;}
+.option{display:block; background:#f4f6fb; padding:8px; margin-top:5px; border-radius:4px;}
+#timer{text-align:center; color:red; font-weight:bold; margin-top:10px;}
+#result{text-align:center; margin-top:15px;}
+</style>
 </head>
 <body>
 
+<div class="container">
 
-<div class="Quiz">
-    <h1>Online Quiz For Student</h1>
+<h2>Online Quiz</h2>
 
-    <p1><b>Enter Email</p1>
-    <input type="email">
-    <br>
-    <br>
+<label>Roll Number</label>
+<input type="text" id="roll">
 
+<label>Select Quiz Type</label>
+<select id="quizType">
+<option value="">Select</option>
+<option value="aptitude">Aptitude</option>
+<option value="verbal">Verbal</option>
+</select>
 
-    <p2><b>Enter Password</p2>
-        <input type="password">
+<button onclick="startQuiz()">Start Quiz</button>
 
+<div id="timer"></div>
+<div id="quizArea"></div>
 
+<button onclick="nextQuestion()">Next</button>
 
-        <div class="MCQ-Test">
-
-            <p><b>Q1.HTML Stands for the ?</b></p>
-
-            <select name="" id="Q1">
-                <option value="">Hyper Text Markup Language</option>
-                <option value="">Hyper Text Main Language</option>
-                <option value="">Hyper Transfer Markup Language</option>
-                <option value="">Hyper Text Markup List</option>
-
-            </select>
-
-            <hr>
-
-
-             <p><b>Q2.DBMS Stands for the ?</b></p>
-
-             <select name="" id="Q2">
-                <option value="">Database management System</option>
-                <option value="">Database System</option>
-                <option value="">DataBase management Search</option>
-                <option value="">Hyper Text Markup List</option>
-
-            </select>
-
-            <hr>
-
-              <p><b>Q3. OOPS Stands For  ?</b></p>
-
-             <select name="" id="Q3">
-                <option value="">Database management System</option>
-                <option value="">Object Oriented Programming</option>
-                <option value="">DataBase management Search</option>
-                <option value="">Hyper Text Markup List</option>
-
-            </select>
-
-            <hr>
-
-
-             <p><b>Q4. Four Pillars of OOPS ?</b></p>
-
-             <select name="" id="Q4">
-                <option value="">Database,System,search,object</option>
-                <option value="">Classes ,object,instance</option>
-                <option value="">Abstaction ,Inheritance,Polymorphism,Encapsulation</option>
-                <option value="">Hyper Text Markup List</option>
-
-            </select>
-
-
-
-
-
-        </div>
-
+<h3 id="result"></h3>
 
 </div>
-    
+
+<script>
+
+// Aptitude questions
+var aptitudeQuestions = [
+{q:"2 + 2 = ?", a:["3","4","5","6"], correct:"4"},
+{q:"5 * 3 = ?", a:["10","15","20","25"], correct:"15"},
+{q:"10 / 2 = ?", a:["2","3","5","8"], correct:"5"},
+{q:"6 + 7 = ?", a:["11","12","13","14"], correct:"13"},
+{q:"Square of 9?", a:["18","27","81","72"], correct:"81"},
+{q:"15 - 7 = ?", a:["8","7","9","6"], correct:"8"},
+{q:"10 * 0 = ?", a:["0","10","1","100"], correct:"0"},
+{q:"7 + 6 = ?", a:["12","13","14","15"], correct:"13"},
+{q:"20 / 5 = ?", a:["2","4","5","10"], correct:"4"},
+{q:"Square root of 49?", a:["5","6","7","8"], correct:"7"}
+];
+
+// Verbal questions
+var verbalQuestions = [
+{q:"Synonym of Happy?", a:["Sad","Joyful","Angry","Tired"], correct:"Joyful"},
+{q:"Opposite of Fast?", a:["Quick","Rapid","Slow","Speed"], correct:"Slow"},
+{q:"Choose correct spelling", a:["Recieve","Receive","Receeve","Receve"], correct:"Receive"},
+{q:"Antonym of Big?", a:["Large","Huge","Small","Great"], correct:"Small"},
+{q:"Synonym of Smart?", a:["Clever","Dull","Lazy","Sad"], correct:"Clever"},
+{q:"Opposite of Rich?", a:["Poor","Wealthy","Happy","Strong"], correct:"Poor"},
+{q:"Synonym of Angry?", a:["Calm","Mad","Nice","Funny"], correct:"Mad"},
+{q:"Antonym of Dark?", a:["Bright","Black","Dim","Grey"], correct:"Bright"},
+{q:"Choose correct spelling", a:["Occurence","Occurrence","Ocurrence","Ockurrence"], correct:"Occurrence"},
+{q:"Synonym of Quick?", a:["Slow","Fast","Late","Small"], correct:"Fast"}
+];
+
+var questions = [];
+var index = 0;
+var score = 0;
+var roll = "";
+var timer;
+var timeLeft = 10;
+
+function startQuiz(){
+roll = document.getElementById("roll").value;
+var type = document.getElementById("quizType").value;
+
+if(roll==""){ alert("Enter Roll Number"); return;}
+if(type==""){ alert("Select Quiz Type"); return;}
+
+if(type=="aptitude"){ questions = aptitudeQuestions; }
+else{ questions = verbalQuestions; }
+
+// random order
+questions.sort(function(){ return Math.random() - 0.5; });
+index = 0;
+score = 0;
+showQuestion();
+}
+
+function showQuestion(){
+var q = questions[index];
+var html = "<h3>"+q.q+"</h3>";
+for(var i=0;i<q.a.length;i++){
+html += "<label class='option'><input type='radio' name='opt' value='"+q.a[i]+"'> "+q.a[i]+"</label>";
+}
+document.getElementById("quizArea").innerHTML = html;
+startTimer();
+}
+
+function startTimer(){
+timeLeft = 10;
+document.getElementById("timer").innerHTML = "Time Left: "+timeLeft+" seconds";
+timer = setInterval(function(){
+timeLeft--;
+document.getElementById("timer").innerHTML = "Time Left: "+timeLeft+" seconds";
+if(timeLeft==0){ clearInterval(timer); nextQuestion(); }
+},1000);
+}
+
+function nextQuestion(){
+clearInterval(timer);
+var selected = document.querySelector("input[name='opt']:checked");
+if(selected){ if(selected.value==questions[index].correct){ score++; } }
+index++;
+if(index<questions.length){ showQuestion(); }
+else{
+document.getElementById("quizArea").innerHTML="";
+document.getElementById("timer").innerHTML="";
+document.getElementById("result").innerHTML = "Roll Number: "+roll+"<br>Score: "+score+" / "+questions.length;
+}
+}
+
+</script>
 </body>
 </html>
